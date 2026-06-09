@@ -9,19 +9,19 @@ class Book extends Model
 {
     use HasFactory;
 
-    // កំណត់ Fields ដែលអនុញ្ញាតឱ្យបញ្ចូលទិន្នន័យបាន
     protected $fillable = [
-        'category_id',
-        'author_id',
         'title',
-        'cover_image',
         'author',
-        'price'
+        'price',
+        'category_id',
+        'cover_image',
+        'author_id'  // 🌟 ត្រូវតែមានត្រង់នេះ ដាច់ខាត!
     ];
 
-    public function author()
+    // 🌟 បង្កើត Relationship ឱ្យត្រូវគ្នានឹងកូដដែលអ្នកហៅក្នុង Controller ($book->with(['authorRelation']))
+    public function authorRelation()
     {
-        return $this->belongsTo(Author::class);
+        return $this->belongsTo(Author::class, 'author_id');
     }
 
     public function category()
@@ -29,8 +29,13 @@ class Book extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function detail()
+    {
+        return $this->hasOne(BookDetail::class);
+    }
+
     public function bookDetail()
     {
-        return $this->hasOne(BookDetail::class);  // One-to-One
+        return $this->hasOne(BookDetail::class, 'book_id');
     }
 }

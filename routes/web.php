@@ -1,31 +1,48 @@
 <?php
-
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookController;
 use Illuminate\Support\Facades\Route;
 
-// បើកដំណើរការផ្លូវ UI Books
+// ទំព័រ Login & Register មិនបាច់ជាប់ការពារទេ
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'webLogin'])->name('login.perform');
+Route::post('/logout', [AuthController::class, 'webLogout'])->name('logout');
 
-// បង្ហាញបញ្ជីសៀវភៅ (កិច្ចការចាស់ដែលបានធ្វើរួច)
-Route::get('/ui/books', [BookController::class, 'uiIndex'])->name('books.ui');
+// 🌟 បើក Route សម្រាប់ចុះឈ្មោះលើ UI ឡើងវិញ
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'webRegister'])->name('register.perform');
 
-// ១. Route សម្រាប់បង្ហាញទំព័រ Form បង្កើតសៀវភៅថ្មី (GET)
-Route::get('/ui/books/create', [BookController::class, 'uiCreate'])->name('books.ui.create');
+// ដាក់ការពារទំព័រ UI ទាំងអស់ លុះត្រាតែ Login រួចរាល់លើ Web
+Route::middleware('auth')->group(function () {
+    Route::get('/ui/books', [BookController::class, 'uiIndex'])->name('books.ui');
+    Route::get('/ui/books/create', [BookController::class, 'uiCreate'])->name('books.ui.create');
+    Route::post('/ui/books/store', [BookController::class, 'uiStore'])->name('books.ui.store');
+    Route::get('/ui/books/{id}', [BookController::class, 'uiShow'])->name('books.ui.show');
+    Route::get('/ui/books/{id}/edit', [BookController::class, 'uiEdit'])->name('books.ui.edit');
+    Route::put('/ui/books/{id}', [BookController::class, 'uiUpdate'])->name('books.ui.update');
+    Route::delete('/ui/books/{id}', [BookController::class, 'uiDestroy'])->name('books.ui.destroy');
+    Route::get('/ui/books/{book_id}/detail/edit', [\App\Http\Controllers\Api\BookDetailController::class, 'uiEdit'])->name('book-details.ui.edit');
+    Route::put('/ui/book-details/{id}', [\App\Http\Controllers\Api\BookDetailController::class, 'uiUpdate'])->name('book-details.ui.update');
 
-// ២. Route សម្រាប់ទទួលទិន្នន័យពី Form យកទៅរក្សាទុក (POST)
-Route::post('/ui/books/store', [BookController::class, 'uiStore'])->name('books.ui.store');
+    Route::get('/ui/categories/create', [\App\Http\Controllers\Api\CategoryController::class, 'uiCreate'])->name('categories.ui.create');
+    Route::post('/ui/categories/store', [\App\Http\Controllers\Api\CategoryController::class, 'uiStore'])->name('categories.ui.store');
 
-// ៣. Route សម្រាប់បង្ហាញព័ត៌មានលម្អិតសៀវភៅ (Detail)
-Route::get('/ui/books/{id}', [BookController::class, 'uiShow'])->name('books.ui.show');
+    // Form សម្រាប់ Author
+    Route::get('/ui/authors/create', [\App\Http\Controllers\Api\AuthorController::class, 'uiCreate'])->name('authors.ui.create');
+    Route::post('/ui/authors/store', [\App\Http\Controllers\Api\AuthorController::class, 'uiStore'])->name('authors.ui.store');
 
-// ៤. Route សម្រាប់បង្ហាញ Form កែប្រែទិន្នន័យ (Edit)
-Route::get('/ui/books/{id}/edit', [BookController::class, 'uiEdit'])->name('books.ui.edit');
-
-// ៥. Route សម្រាប់ទទួលទិន្នន័យដែលបានកែប្រែយកទៅរក្សាទុក (Update)
-Route::put('/ui/books/{id}', [BookController::class, 'uiUpdate'])->name('books.ui.update');
-
-// ៦. Route សម្រាប់លុបទិន្នន័យសៀវភៅ (Delete)
-Route::delete('/ui/books/{id}', [BookController::class, 'uiDestroy'])->name('books.ui.destroy');
+    Route::get('/store', function () {
+        $books = \App\Models\Book::with('category')->get();
+        return view('books.user_index', compact('books'));
+    })->name('store.public');
+});
 
 Route::get('/', function () {
-    return view('welcome');
+    if (auth()->check()) {
+        if (auth()->user()->role === 'admin') {
+            return redirect()->route('books.ui');
+        }
+        return redirect()->route('store.public');
+    }
+    return redirect()->route('login');
 });

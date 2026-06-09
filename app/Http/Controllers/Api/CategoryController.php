@@ -58,4 +58,41 @@ class CategoryController extends Controller
         }
         return response()->json(['message' => 'បានលុបចេញពីប្រព័ន្ធជោគជ័យ!'], 200);
     }
+
+    public function apiIndex()
+    {
+        return response()->json(\App\Models\Category::all(), 200);
+    }
+
+    public function apiStore(Request $request)
+    {
+        $validated = $request->validate(['name' => 'required|string|unique:categories']);
+        $category = \App\Models\Category::create($validated);
+        return response()->json(['message' => 'បង្កើតប្រភេទជោគជ័យ!', 'category' => $category], 21);
+    }
+
+    public function uiCreate()
+    {
+        return view('categories.create');
+    }
+
+    // 🌟 ថែមមុខងារទទួលទិន្នន័យពី Form ទៅរក្សាទុកក្នុង Database
+    public function uiStore(Request $request)
+    {
+        // Validation ទិន្នន័យ
+        $request->validate([
+            'name' => 'required|string|unique:categories,name',
+        ], [
+            'name.required' => 'សូមបញ្ចូលឈ្មោះប្រភេទសៀវភៅ!',
+            'name.unique' => 'ឈ្មោះប្រភេទសៀវភៅនេះមានរួចហើយ!',
+        ]);
+
+        // រក្សាទុកក្នុង Database
+        \App\Models\Category::create([
+            'name' => $request->name
+        ]);
+
+        // នៅពេលបង្កើតរួច ឱ្យវាត្រឡប់ទៅកាន់ទំព័របង្កើតសៀវភៅវិញ ជាមួយនឹងសារជោគជ័យ
+        return redirect()->route('books.ui')->with('success', 'បានបង្កើតប្រភេទសៀវភៅជោគជ័យ!');
+    }
 }

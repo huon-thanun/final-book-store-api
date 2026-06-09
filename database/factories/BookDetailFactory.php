@@ -23,5 +23,5 @@ class BookDetailFactory extends Factory
             'language' => 'Khmer',
             'page_count' => $this->faker->numberBetween(100, 500),
         ];
-    }
+    }   
 }

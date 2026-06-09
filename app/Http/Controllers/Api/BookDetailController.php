@@ -3,47 +3,41 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\BookDetail;
 use Illuminate\Http\Request;
 
 class BookDetailController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    // API: បង្ហាញព័ត៌មានលម្អិតសៀវភៅ (មេរៀនទី ៥)
+    public function show($book_id)
     {
-        //
+        $detail = BookDetail::where('book_id', $book_id)->first();
+        if (!$detail) {
+            return response()->json(['message' => 'រកមិនឃើញព័ត៌មានលម្អិតឡើយ'], 404);
+        }
+        return response()->json($detail, 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    // Web UI: បង្ហាញទំព័រកែប្រែព័ត៌មានលម្អិត (មេរៀនទី ៤)
+    public function uiEdit($book_id)
     {
-        //
+        $detail = BookDetail::where('book_id', $book_id)->firstOrFail();
+        return view('books.edit_detail', compact('detail'));
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // Web UI: រក្សាទុកការកែប្រែព័ត៌មានលម្អិត
+    public function uiUpdate(Request $request, $id)
     {
-        //
-    }
+        $detail = BookDetail::findOrFail($id);
+        $request->validate([
+            'publisher' => 'required|string',
+            'language' => 'required|string',
+            'page_count' => 'required|integer|min:1',
+            'description' => 'nullable|string'
+        ]);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+        $detail->update($request->all());
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->route('books.ui.show', $detail->book_id)->with('success', 'បានធ្វើបច្ចុប្បន្នភាពព័ត៌មានលម្អិតជោគជ័យ!');
     }
 }

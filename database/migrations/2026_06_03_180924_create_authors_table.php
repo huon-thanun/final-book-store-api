@@ -11,10 +11,11 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('authors', function (Blueprint $table) {
-            $table->id();  // BigIncrements, Primary Key
-            $table->string('name');  // Not Null
-            $table->string('email')->unique();  // Not Null, Unique
-            $table->text('biography')->nullable();  // Nullable
+            $table->id();
+            $table->string('name');
+            // 🌟 ថែម ->nullable() នៅខាងចុងបែបនេះ
+            $table->string('email')->nullable();
+            $table->text('bio')->nullable();
             $table->timestamps();
         });
     }

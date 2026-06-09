@@ -46,4 +46,26 @@ class AuthorController extends Controller
     {
         //
     }
+
+    public function uiCreate()
+    {
+        return view('authors.create');
+    }
+
+    public function uiStore(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string',
+            'bio' => 'nullable|string',
+            'email' => 'required|email|unique:authors,email'  // បន្ថែម validation ឱ្យត្រូវនឹង database
+        ]);
+
+        \App\Models\Author::create([
+            'name' => $request->name,
+            'bio' => $request->bio,
+            'email' => $request->email
+        ]);
+
+        return redirect()->route('books.ui')->with('success', 'បានបន្ថែមអ្នកនិពន្ធជោគជ័យ!');
+    }
 }
