@@ -1,3 +1,4 @@
+//index
 @extends('layouts.dashboard')
 
 @section('content')
@@ -45,6 +46,34 @@
             </div>
         </div>
     </div>
+
+    <div class="card mb-4">
+        <div class="card-body bg-white p-3 border-0" style="border-radius: 14px;">
+            <form action="{{ url()->current() }}" method="GET" class="row g-2 align-items-center">
+                <div class="col-md-9 col-sm-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
+                        <input type="text" name="search" class="form-control border-start-0 border-end-0 py-2" 
+                           placeholder="ស្វែងរកសៀវភៅដែលអ្នកចង់បាន (ចំណងជើង, ប្រភេទ, អ្នកនិពន្ធ)..." 
+                           value="{{ request('search') }}"
+                           style="font-family: 'Kantumruy Pro', sans-serif; font-size: 14px;">
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fa-solid fa-filter me-1"></i> ចម្រោះ
+                    </button>
+                    @if(request('search'))
+                        <a href="{{ url()->current() }}" class="btn btn-light border">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </a>
+                    @endif
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 {{-- Table card --}}
@@ -56,10 +85,9 @@
         </div>
         
         {{-- Create Button (Admin Only) --}}
-        @if(Auth::user()?->role === 'admin')
-            <a href="{{ route('books.ui.create') }}" class="btn btn-primary btn-sm d-flex align-items-center gap-2" style="background:#6c63ff; border:none; padding: 8px 16px; border-radius: 8px;">
-                <i class="fa-solid fa-plus" style="font-size:12px;"></i>
-                <span>បន្ថែមថ្មី</span>
+        @if(Auth::check() && Auth::user()->isAdmin())
+            <a href="{{ route('books.ui.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> បន្ថែមសៀវភៅថ្មី
             </a>
         @endif
     </div>
@@ -74,7 +102,12 @@
                         <th style="padding: 14px 16px; font-size:11px; color:#7b7f96; font-weight:600; text-transform:uppercase; letter-spacing:.05em;">ប្រភេទ</th>
                         <th style="padding: 14px 16px; font-size:11px; color:#7b7f96; font-weight:600; text-transform:uppercase; letter-spacing:.05em;">អ្នកនិពន្ធ</th>
                         <th style="padding: 14px 16px; font-size:11px; color:#7b7f96; font-weight:600; text-transform:uppercase; letter-spacing:.05em;">តម្លៃ</th>
-                        <th style="padding: 14px 20px; font-size:11px; color:#7b7f96; font-weight:600; text-transform:uppercase; letter-spacing:.05em; text-align:right;">សកម្មភាព</th>
+                        <th style="padding: 14px 16px; font-size:11px; color:#7b7f96; font-weight:600; text-transform:uppercase; letter-spacing:.05em;">ស្តុក</th>
+                        <!-- <th style="padding: 14px 20px; font-size:11px; color:#7b7f96; font-weight:600; text-transform:uppercase; letter-spacing:.05em; text-align:right;">សកម្មភាព</th> -->
+                        {{-- 🌟 ឆែកបង្ហាញក្បាលតារាង Actions សម្រាប់តែ Admin --}}
+                        @if(Auth::check() && Auth::user()->isAdmin())
+                            <th style="padding: 14px 20px; font-size:11px; color:#7b7f96; font-weight:600; text-transform:uppercase; letter-spacing:.05em; text-align:right;">សកម្មភាព</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -103,16 +136,23 @@
                         <td style="padding: 14px 16px;">
                             <span style="font-weight:700; font-size:15px; color:#22c55e;">${{ number_format($book->price, 2) }}</span>
                         </td>
+                        <td style="padding: 14px 16px;">
+                            @if($book->stock > 0)
+                                <span class="badge bg-success">{{ $book->stock }} ក្បាល</span>
+                            @else
+                                <span class="badge bg-danger">អស់ពីស្តុក</span>
+                            @endif
+                        </td>
                         <td style="padding: 14px 20px; text-align:right;" onclick="event.stopPropagation()">
                             <div class="d-flex justify-content-end gap-1">
-                                {{-- View Detail --}}
-                                <a href="{{ route('books.ui.show', $book->id) }}" title="មើលព័ត៌មាន" style="height:32px; padding:0 12px; border-radius:8px; border:1px solid #d1d5db; background:#fff; color:#374151; display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; text-decoration:none; font-family:'Kantumruy Pro',sans-serif;">
+                                <!-- {{-- View Detail --}} -->
+                                <!-- <a href="{{ route('books.ui.show', $book->id) }}" title="មើលព័ត៌មាន" style="height:32px; padding:0 12px; border-radius:8px; border:1px solid #d1d5db; background:#fff; color:#374151; display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; text-decoration:none; font-family:'Kantumruy Pro',sans-serif;">
                                     <i class="fa-solid fa-eye" style="font-size:12px;"></i>
                                     <span>មើល</span>
-                                </a>
+                                </a> -->
 
                                 {{-- Action controls for Admin only --}}
-                                @if(Auth::user()?->role === 'admin')
+                                @if(Auth::check() && Auth::user()->isAdmin())
                                     {{-- Edit Detail Info --}}
                                     <a href="{{ route('book-details.ui.edit', $book->id) }}" title="ព័ត៌មានលម្អិត" style="width:32px; height:32px; border-radius:8px; border:1px solid #bfdbfe; background:#eff6ff; color:#2563eb; display:inline-flex; align-items:center; justify-content:center; font-size:13px; text-decoration:none;">
                                         <i class="fa-solid fa-circle-info"></i>
@@ -143,7 +183,7 @@
                             <div>
                                 <i class="fa-solid fa-box-open fa-3x" style="color:#e2e4ee; display:block; margin-bottom:12px;"></i>
                                 <p style="color:#7b7f96; font-size:14px; margin:0;">មិនទាន់មានទិន្នន័យសៀវភៅនៅក្នុងប្រព័ន្ធឡើយ។</p>
-                                @if(Auth::user()?->role === 'admin')
+                                @if(Auth::check() && Auth::user()->isAdmin())
                                     <a href="{{ route('books.ui.create') }}" class="btn btn-primary btn-sm mt-3">
                                         <i class="fa-solid fa-plus me-1"></i>បន្ថែមសៀវភៅដំបូង
                                     </a>

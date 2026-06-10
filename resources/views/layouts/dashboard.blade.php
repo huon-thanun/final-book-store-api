@@ -1,3 +1,4 @@
+//dashboard layout
 <!DOCTYPE html>
 <html lang="km">
 <head>
@@ -373,29 +374,33 @@
             <i class="fa-solid fa-layer-group"></i>
             <span>បញ្ជីសៀវភៅ</span>
         </a>
+        @if(Auth::check() && Auth::user()->isAdmin())
+            <a href="{{ route('books.ui.create') }}" class="nav-item-link {{ Route::is('books.ui.create') ? 'active' : '' }}">
+                <i class="fa-solid fa-plus"></i>
+                <span>បន្ថែមសៀវភៅ</span>
+            </a>
+        @endif
 
-        <a href="{{ route('books.ui.create') }}" class="nav-item-link {{ Route::is('books.ui.create') ? 'active' : '' }}">
-            <i class="fa-solid fa-plus"></i>
-            <span>បន្ថែមសៀវភៅ</span>
-        </a>
+        {{-- 🌟 ប្រើប្រាស់ @if ឆែកបង្ហាញ Menu ទាំងនេះសម្រាប់តែគណនី Admin ប៉ុណ្ណោះ --}}
+        @if(Auth::check() && Auth::user()->isAdmin())
+            <div class="nav-label" style="margin-top:12px;">ប្រភេទ & អ្នកនិពន្ធ (សម្រាប់ Admin)</div>
 
-        <div class="nav-label" style="margin-top:12px;">ប្រភេទ & អ្នកនិពន្ធ</div>
+            <a href="{{ route('categories.ui.create') }}" class="nav-item-link {{ Route::is('categories.ui.create') ? 'active' : '' }}">
+                <i class="fa-solid fa-tags"></i>
+                <span>បង្កើត Category</span>
+            </a>
 
-        <a href="{{ route('categories.ui.create') }}" class="nav-item-link {{ Route::is('categories.ui.create') ? 'active' : '' }}">
-            <i class="fa-solid fa-tags"></i>
-            <span>បង្កើត Category</span>
-        </a>
-
-        <a href="{{ route('authors.ui.create') }}" class="nav-item-link {{ Route::is('authors.ui.create') ? 'active' : '' }}">
-            <i class="fa-solid fa-pen-nib"></i>
-            <span>បន្ថែមអ្នកនិពន្ធ</span>
-        </a>
+            <a href="{{ route('authors.ui.create') }}" class="nav-item-link {{ Route::is('authors.ui.create') ? 'active' : '' }}">
+                <i class="fa-solid fa-pen-nib"></i>
+                <span>បន្ថែមអ្នកនិពន្ធ</span>
+            </a>
+        @endif
     </nav>
 
     <div class="sidebar-footer">
         <form action="{{ route('logout') }}" method="POST">
             @csrf
-            <button type="submit" class="logout-btn">
+            <button type="button" class="btn btn-link text-danger text-decoration-none d-flex align-items-center gap-2 w-100 px-3 py-2" data-bs-toggle="modal" data-bs-target="#adminLogoutModal">
                 <i class="fa-solid fa-right-from-bracket"></i>
                 <span>ចាកចេញ</span>
             </button>
@@ -424,6 +429,34 @@
 
         @yield('content')
     </main>
+</div>
+
+<div class="modal fade" id="adminLogoutModal" tabindex="-1" aria-labelledby="adminLogoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="width: 380px;">
+        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 15px 35px rgba(0,0,0,0.15); padding: 24px; background: #fff;">
+            <div class="modal-body text-center p-0">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: #fef2f2; border: 6px solid #fff; outline: 1px solid #fecaca; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                    <i class="fa-solid fa-right-from-bracket" style="color: #dc2626; font-size: 18px;"></i>
+                </div>
+
+                <h5 class="fw-bold text-dark mb-2" style="font-size: 18px; font-family: 'Kantumruy Pro', sans-serif;">ចាកចេញពីប្រព័ន្ធរដ្ឋបាល?</h5>
+                <p class="text-muted small mb-4" style="font-family: 'Kantumruy Pro', sans-serif;">តើអ្នកពិតជាចង់ចាកចេញពីគណនី Admin <strong class="text-dark">"{{ Auth::check() ? Auth::user()->name : '' }}"</strong> មែនទេ?</p>
+
+                <div class="d-flex gap-2 justify-content-between">
+                    <button type="button" class="btn btn-light grow py-2 fw-semibold" data-bs-dismiss="modal" style="border-radius: 10px; font-size: 14px; font-family: 'Kantumruy Pro', sans-serif;">
+                        បោះបង់
+                    </button>
+                    
+                    <form action="{{ route('logout') }}" method="POST" class="grow">
+                        @csrf
+                        <button type="submit" class="btn btn-danger w-100 py-2 fw-semibold" style="border-radius: 10px; font-size: 14px; background: #dc2626; font-family: 'Kantumruy Pro', sans-serif;">
+                            យល់ព្រម
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

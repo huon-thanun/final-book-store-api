@@ -1,3 +1,4 @@
+//createbook
 @extends('layouts.dashboard')
 
 @section('content')
@@ -44,6 +45,11 @@
                                        placeholder="0.00" required>
                             </div>
                             @error('price') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="stock" class="form-label">ចំនួនក្នុងស្តុក (Stock)</label>
+                            <input type="number" name="stock" id="stock" class="form-control" min="0" value="{{ isset($book) ? $book->stock : old('stock', 0) }}" required>
                         </div>
 
                         <div class="col-md-6">

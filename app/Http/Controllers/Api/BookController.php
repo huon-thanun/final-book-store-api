@@ -30,6 +30,7 @@ class BookController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
             'category_id' => 'required|exists:categories,id',
             'author_id' => 'required|exists:authors,id',
             'cover_image' => 'nullable|image|mimes:jpg,png|max:2048',
@@ -41,6 +42,7 @@ class BookController extends Controller
         $book = Book::create([
             'title' => $validated['title'],
             'price' => $validated['price'],
+            'stock' => $validated['stock'],
             'category_id' => $validated['category_id'],
             'author_id' => $validated['author_id'],
             'author' => $authorModel ? $authorModel->name : 'Unknown Author',
@@ -77,6 +79,7 @@ class BookController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
             'category_id' => 'required|exists:categories,id',
             'author_id' => 'required|exists:authors,id',
             'cover_image' => 'nullable|image|mimes:jpg,png|max:2048',
@@ -93,6 +96,7 @@ class BookController extends Controller
         $book->update([
             'title' => $validated['title'],
             'price' => $validated['price'],
+            'stock' => $validated['stock'],
             'category_id' => $validated['category_id'],
             'author_id' => $validated['author_id'],
             'author' => $authorModel ? $authorModel->name : $book->author,
@@ -124,11 +128,24 @@ class BookController extends Controller
     // ផ្នែកទី ២៖ សម្រាប់ផ្ទាំង UI Web (Browser)
     // ==========================================
 
-    public function uiIndex()
+    public function uiIndex(\Illuminate\Http\Request $request)
     {
-        $books = Book::with(['category', 'detail'])->get();
+        $search = $request->input('search');
 
-        $booksCount = Book::count();
+        $books = \App\Models\Book::with(['category', 'detail'])
+            ->when($search, function ($query, $search) {
+                return $query
+                    ->where('title', 'like', "%{$search}%")
+                    ->orWhereHas('category', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhere('author', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->get();
+
+        // រក្សាចំនួនសម្រាប់ Stat Cards បង្ហាញលើ Dashboard ដដែល
+        $booksCount = \App\Models\Book::count();
         $categoriesCount = \App\Models\Category::count();
         $authorsCount = \App\Models\Author::count();
 
@@ -137,6 +154,10 @@ class BookController extends Controller
 
     public function uiCreate()
     {
+        if (!auth()->user()->isAdmin()) {
+            return redirect()->route('store.public')->with('error', 'អ្នកគ្មានសិទ្ធិចូលកាន់ទំព័រនេះឡើយ!');
+        }
+
         $categories = \App\Models\Category::all();
         $authors = \App\Models\Author::all();
         return view('books.create', compact('categories', 'authors'));
@@ -144,9 +165,14 @@ class BookController extends Controller
 
     public function uiStore(Request $request)
     {
+        if (!auth()->user()->isAdmin()) {
+            return redirect()->route('books.ui')->with('error', 'សុំទោស! មានតែ Admin ទេទើបអាចបន្ថែមសៀវភៅថ្មីបាន!');
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
             'category_id' => 'required|exists:categories,id',
             'author_id' => 'required|exists:authors,id',
             'cover_image' => 'nullable|image|mimes:jpg,png|max:2048',
@@ -158,6 +184,7 @@ class BookController extends Controller
         $book = Book::create([
             'title' => $request->title,
             'price' => $request->price,
+            'stock' => $request->stock,
             'category_id' => $request->category_id,
             'author_id' => $request->author_id,
             'author' => $authorModel ? $authorModel->name : 'Unknown Author',
@@ -211,6 +238,7 @@ class BookController extends Controller
         $book->update([
             'title' => $request->title,
             'price' => $request->price,
+            'stock' => $request->stock,
             'category_id' => $request->category_id,
             'author_id' => $request->author_id,
             'author' => $authorModel ? $authorModel->name : $book->author,

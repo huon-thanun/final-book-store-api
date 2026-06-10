@@ -13,6 +13,7 @@ class BookResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'price' => $this->price,
+            'stock' => $this->stock,
             'cover_image' => $this->cover_image ? asset('storage/' . $this->cover_image) : null,
             'category_id' => $this->category_id,
             'category_name' => $this->category ? $this->category->name : null,

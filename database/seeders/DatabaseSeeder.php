@@ -2,32 +2,30 @@
 
 namespace Database\Seeders;
 
-use App\Models\Author;
-use App\Models\Book;
-use App\Models\BookDetail;
-use App\Models\Category;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // ១. បង្កើតទិន្នន័យមេ (Master Data)៖ អ្នកនិពន្ធ ៥ នាក់ និង ប្រភេទសៀវភៅ ៥
-        $authors = Author::factory()->count(5)->create();  //
-        $categories = Category::factory()->count(5)->create();  //
+        $adminRole = Role::create(['name' => 'admin', 'display_name' => 'Administrator']);
+        $staffRole = Role::create(['name' => 'staff', 'display_name' => 'Staff Member']);
 
-        // ២. បង្កើតរង្វិលជុំ (Loop) ចំនួន ២០ ដង ដើម្បីបង្កើតសៀវភៅ ២០ ក្បាល
-        for ($i = 0; $i < 20; $i++) {
-            // ៣. បង្កើតសៀវភៅ ដោយទាញយក ID ដោយចៃដន្យពី $authors និង $categories
-            $book = Book::factory()->create([
-                'author_id' => $authors->random()->id,  // គន្លឹះ៖ ->random()->id
-                'category_id' => $categories->random()->id,  // គន្លឹះ៖ ->random()->id
-            ]);  //
+        User::create([
+            'name' => 'Thanun Admin',
+            'email' => 'thanun.admin@gmail.com',
+            'password' => Hash::make('password123'),
+            'role_id' => $adminRole->id,  // លេខ 1
+        ]);
 
-            // ៤. បង្កើតព័ត៌មានលម្អិតសៀវភៅ ដោយភ្ជាប់ទៅកាន់ $book ដែលទើបបង្កើតខាងលើ
-            BookDetail::factory()->create([
-                'book_id' => $book->id  // យក ID ពីសៀវភៅខាងលើមកបំពេញ
-            ]);  //
-        }
+        User::create([
+            'name' => 'Nana Staff',
+            'email' => 'nana.staff@gmail.com',
+            'password' => Hash::make('password123'),
+            'role_id' => $staffRole->id,  // លេខ 2
+        ]);
     }
 }

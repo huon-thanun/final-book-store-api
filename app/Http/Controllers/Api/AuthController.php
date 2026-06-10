@@ -44,35 +44,34 @@ class AuthController extends Controller
             'password' => 'required|string|min:6|confirmed',
         ]);
 
+        $staffRole = \App\Models\Role::where('name', 'staff')->first();
+
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => 'staff'  // ចុះឈ្មោះពី UI ជាប់ជា staff ជាលំនាំដើម
+            'role_id' => $staffRole ? $staffRole->id : 2
         ]);
 
-        // ចូលប្រព័ន្ធភ្លាមៗបន្ទាប់ពីចុះឈ្មោះរួច
         Auth::login($user);
 
-        // ↪️ បង្វែរទៅទំព័រ user_index ភ្លាមៗព្រោះគាត់ជា simple user (staff)
         return redirect()->route('store.public')->with('success', 'បង្កើតគណនីជោគជ័យ!');
     }
 
-    // 🌟 ២. សម្រាប់ចុះឈ្មោះតាម API Postman (អាចកំណត់ Role ជា Admin បាន)
     public function apiRegister(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|unique:users',
-            'password' => 'required|string|min:6',
-            'role' => 'required|string'  // 'admin' ឬ 'staff' បញ្ជូនពី Postman
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+            'role_id' => 'required|exists:roles,id',
         ]);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => $validated['role']
+            'role_id' => $validated['role_id'],
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -99,7 +98,7 @@ class AuthController extends Controller
             // 🔍 ពិនិត្យមើលតួនាទី (Role) របស់គណនីដែលបានចូលប្រព័ន្ធ
             $user = Auth::user();
 
-            if ($user->role === 'admin') {
+            if ($user->role && $user->role->name === 'admin') {
                 // បើជា Admin ឱ្យទៅទំព័រគ្រប់គ្រងសៀវភៅ (Backend Dashboard)
                 return redirect()->route('books.ui');
             } else {

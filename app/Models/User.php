@@ -19,12 +19,23 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role',  // ត្រូវប្រាកដថាមាន role ប្រសិនបើអ្នកប្រើប្រាស់វា
-    ];
+    protected $fillable = ['name', 'email', 'password', 'role_id'];  // 🌟 ដូរទៅ role_id
+
+    // 🌟 បង្កើតទំនាក់ទំនងទាញរកឈ្មោះ Role
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role && $this->role->name === 'admin';
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->role && $this->role->name === 'staff';
+    }
 
     /**
      * The attributes that should be hidden for serialization.

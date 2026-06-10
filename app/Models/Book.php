@@ -11,11 +11,12 @@ class Book extends Model
 
     protected $fillable = [
         'title',
-        'author',
         'price',
+        'stock',
         'category_id',
-        'cover_image',
-        'author_id'  // 🌟 ត្រូវតែមានត្រង់នេះ ដាច់ខាត!
+        'author_id',
+        'author',
+        'cover_image'
     ];
 
     // 🌟 បង្កើត Relationship ឱ្យត្រូវគ្នានឹងកូដដែលអ្នកហៅក្នុង Controller ($book->with(['authorRelation']))

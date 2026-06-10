@@ -1,3 +1,4 @@
+//editbookdetail
 @extends('layouts.dashboard')
 
 @section('content')

@@ -1,6 +1,7 @@
 <?php
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // ទំព័រ Login & Register មិនបាច់ជាប់ការពារទេ
@@ -31,9 +32,24 @@ Route::middleware('auth')->group(function () {
     Route::get('/ui/authors/create', [\App\Http\Controllers\Api\AuthorController::class, 'uiCreate'])->name('authors.ui.create');
     Route::post('/ui/authors/store', [\App\Http\Controllers\Api\AuthorController::class, 'uiStore'])->name('authors.ui.store');
 
-    Route::get('/store', function () {
-        $books = \App\Models\Book::with('category')->get();
-        return view('books.user_index', compact('books'));
+    Route::get('/store', function (Request $request) {
+        $search = $request->input('search');
+
+        $books = \App\Models\Book::with(['category'])
+            ->when($search, function ($query, $search) {
+                return $query
+                    ->where('title', 'like', "%{$search}%")  // ស្វែងរកតាមឈ្មោះសៀវភៅ
+                    ->orWhereHas('category', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");  // ស្វែងរកតាមប្រភេទ Category
+                    })
+                    ->orWhere('author', 'like', "%{$search}%");  // ស្វែងរកតាមឈ្មោះអ្នកនិពន្ធ
+            })
+            ->latest()
+            ->get();
+
+        // 🌟 ជួសជុលត្រង់ចំណុចនេះ៖ ហៅទៅកាន់ Folder "book" និងឯកសារ "user_index"
+        return view('books.user_index', compact('books')); 
+        
     })->name('store.public');
 });
 
